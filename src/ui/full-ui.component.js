@@ -1,8 +1,8 @@
 import { h, Component } from "preact";
 import Popup from "./popup.component";
-import DevLibOverrides, {
-  overridesBesidesDevLibs,
-} from "./dev-lib-overrides.component";
+import DevLibOverrides from "./dev-lib-overrides.component";
+import { overridesBesidesDevLibs } from "../util/dev-libs";
+import { getOverrideTypes } from "../util/override-types";
 
 function validateTriggerPosition(position) {
   const validPositions = [
@@ -15,18 +15,45 @@ function validateTriggerPosition(position) {
   return validPositions.indexOf(position) >= 0 ? position : "bottom-right";
 }
 
-const validPositions = ["top-left", "top-right", "bottom-left", "bottom-right"];
+function TriggerButton({
+  triggerPosition,
+  toggleTrigger,
+  atLeastOneOverride,
+  pendingOverrides,
+}) {
+  return (
+    <div>
+      <button
+        onClick={toggleTrigger}
+        className={`imo-unstyled imo-trigger imo-trigger-${triggerPosition} ${
+          atLeastOneOverride
+            ? pendingOverrides
+              ? "imo-trigger-pending-overrides"
+              : "imo-trigger-applied-overrides"
+            : ""
+        }`}
+      >
+        {"{\u00B7\u00B7\u00B7}"}
+      </button>
+    </div>
+  );
+}
+
 export default class FullUI extends Component {
   state = {
     showingPopup: false,
   };
+
   componentDidMount() {
     window.addEventListener("import-map-overrides:change", this.doUpdate);
   }
+
   componentWillUnmount() {
     window.removeEventListener("import-map-overrides:change", this.doUpdate);
   }
+
   doUpdate = () => this.forceUpdate();
+
   render(props, state) {
     const shouldShow =
       !props.customElement.hasAttribute("show-when-local-storage") ||
@@ -44,14 +71,14 @@ export default class FullUI extends Component {
 
     return (
       <div>
-        <button
-          onClick={this.toggleTrigger}
-          className={`imo-unstyled imo-trigger imo-trigger-${triggerPosition} ${
-            this.atLeastOneOverride() ? "imo-current-override" : ""
-          }`}
-        >
-          {"{\u00B7\u00B7\u00B7}"}
-        </button>
+        {!state.showingPopup && (
+          <TriggerButton
+            triggerPosition={triggerPosition}
+            toggleTrigger={this.toggleTrigger}
+            atLeastOneOverride={this.atLeastOneOverride()}
+            pendingOverrides={this.pendingOverrides()}
+          />
+        )}
         {this.useDevLibs() && <DevLibOverrides />}
         {state.showingPopup && (
           <Popup
@@ -62,14 +89,17 @@ export default class FullUI extends Component {
       </div>
     );
   }
+
   toggleTrigger = () => {
     this.setState((prevState) => ({
       showingPopup: !prevState.showingPopup,
     }));
   };
+
   importMapChanged = () => {
     this.forceUpdate();
   };
+
   useDevLibs = () => {
     const localStorageValue = localStorage.getItem(
       "import-map-overrides-dev-libs"
@@ -78,6 +108,17 @@ export default class FullUI extends Component {
       ? localStorageValue === "true"
       : this.props.customElement.hasAttribute("dev-libs");
   };
+
+  pendingOverrides = () => {
+    const { nextOverriddenModules, pendingRefreshDefaultModules } =
+      getOverrideTypes(this.filterModuleNames);
+
+    return (
+      nextOverriddenModules.length > 0 ||
+      pendingRefreshDefaultModules.length > 0
+    );
+  };
+
   atLeastOneOverride = () => {
     if (this.useDevLibs()) {
       return overridesBesidesDevLibs();

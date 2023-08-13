@@ -22,14 +22,14 @@
   position: fixed;
   margin: 10px;
   border-radius: 5px;
-  background-color: navajowhite;
+  background-color: #fefefe;
   height: 50px;
   width: 50px;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 18px;
-  font-family: sans-serif;
+  font-family: Helvetica, sans-serif;
   z-index: 10500;
 }
 
@@ -53,48 +53,334 @@
   left: 0;
 }
 
-.imo-popup {
-  box-sizing: border-box;
+.imo-trigger-pending-overrides {
+  background-color: #fffbf4;
+}
+
+.imo-trigger-applied-overrides {
+  background-color: #f6fff9;
+}
+
+.imo-popup-container {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 50%;
+  height: 40%;
   z-index: 10000;
-  background-color: black;
-  color: white;
-  font-family: sans-serif;
-  padding: 24px;
-  overflow-y: auto;
+  font-family: Helvetica, sans-serif;
+  background-color: #0f0f0f;
+  color: #dcdcdc;
+  fill: #dcdcdc;
 }
 
-.imo-popup a:visited,
-.imo-popup a {
+@media (prefers-color-scheme: light) {
+  .imo-popup-container {
+    background-color: #fefefe;
+    color: #5c5c5c;
+    fill: #5c5c5c;
+  }
+}
+
+.imo-popup-nav {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  border-width: 1px 0 1px 0;
+  border-style: solid;
+  height: 40px;
+  padding-left: 16px;
+  padding-right: 16px;
+  background: #3c3c3c;
+  border-color: #555555;
+  fill: white;
+}
+
+@media (prefers-color-scheme: light) {
+  .imo-popup-nav {
+    background-color: #f6f6f6;
+    border-color: #dadada;
+    fill: #040404;
+  }
+}
+
+.imo-close-button {
+  cursor: pointer;
+}
+
+.imo-close-button:hover svg {
+  fill: #d0d0d0;
+}
+
+@media (prefers-color-scheme: light) {
+  .imo-close-button:hover svg {
+    fill: #444444;
+  }
+}
+
+.imo-popup-content {
+  box-sizing: border-box;
+  padding: 16px;
+  overflow-y: scroll;
+  height: calc(100% - 40px);
+}
+
+.imo-popup-content a:visited,
+.imo-popup-content a {
   color: white;
 }
 
-.imo-popup .imo-module-dialog {
+@media (prefers-color-scheme: light) {
+  .imo-popup-content a:visited,
+  .imo-popup-content a {
+    color: #003db5;
+  }
+}
+
+.imo-popup-content .imo-module-dialog {
   left: calc(50% - 200px);
 }
 
-.imo-header {
+.imo-popup-content button {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  border-radius: 2px;
+  margin-right: 8px;
+  padding: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.14px;
+  cursor: pointer;
+  border: 1px solid #555;
+  background: #3c3c3c;
+  color: white;
+  fill: white;
 }
 
-.imo-list {
-  margin-left: 16px;
+.imo-popup-content button:hover {
+  background: #555;
 }
 
-.imo-list > *:not(:last-child) {
+@media (prefers-color-scheme: light) {
+  .imo-popup-content button {
+    border-color: #dadada;
+    background: #f6f6f6;
+    color: #003db5;
+    fill: #003db5;
+  }
+
+  .imo-popup-content button:hover {
+    background: #dadada;
+    color: #0048d7;
+    fill: #0048d7;
+  }
+}
+
+.imo-icon {
+  margin-right: 4px;
+  height: 16px;
+  width: 16px;
+}
+
+.imo-header h1 {
+  line-height: 23px;
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 0;
   margin-bottom: 8px;
+  color: white;
+}
+
+@media (prefers-color-scheme: light) {
+  .imo-header h1 {
+    color: #040404;
+  }
+}
+
+.imo-header p {
+  line-height: 18.4px;
+  font-size: 16px;
+  font-weight: 400;
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.imo-list-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .imo-list-container *,
 .imo-modal-container * {
-  font-family: sans-serif;
   box-sizing: border-box;
+}
+
+.imo-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.imo-list-search-container {
+  display: flex;
+  align-items: center;
+  border-radius: 2px;
+  border: 1px solid #555555;
+  padding: 6px;
+}
+
+.imo-list-search-container .imo-list-search-icon {
+  margin-top: -2px;
+}
+
+@media (prefers-color-scheme: light) {
+  .imo-list-search-container {
+    border: 1px solid #dadada;
+    background-color: #fefefe;
+  }
+}
+
+.imo-list-search-container input {
+  font-size: 14px;
+  font-weight: 400;
+  height: 20px;
+  width: 264px;
+  line-height: normal;
+  letter-spacing: 0.14px;
+  border: none;
+  vertical-align: bottom;
+  background-color: #0f0f0f;
+}
+
+@media (prefers-color-scheme: light) {
+  .imo-list-search-container input {
+    background-color: #fefefe;
+  }
+}
+
+.imo-overrides-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.imo-overrides-table td,
+.imo-overrides-table th {
+  border-width: 0 0 1px 0;
+  border-style: solid;
+  border-color: #555555;
+  padding: 8px 16px;
+  text-align: left;
+  font-size: 12px;
+}
+
+.imo-overrides-table td:last-child,
+.imo-overrides-table th:last-child {
+  text-align: right;
+}
+
+.imo-overrides-table td:last-child {
+  color: white;
+  font-weight: 700;
+}
+
+.imo-overrides-table th {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.imo-overrides-table tbody td {
+  font-size: 16px;
+}
+
+.imo-overrides-table tbody tr:hover {
+  cursor: pointer;
+  background-color: #3c3c3c;
+}
+
+@media (prefers-color-scheme: light) {
+  .imo-overrides-table td,
+  .imo-overrides-table th {
+    border-color: #dadada;
+  }
+
+  .imo-overrides-table td:last-child {
+    color: #003db5;
+  }
+
+  .imo-overrides-table tbody tr:hover {
+    background-color: #f6f6f6;
+  }
+}
+
+.imo-status {
+  display: inline-block;
+  height: 12px;
+  width: 12px;
+  border-radius: 6px;
+  border: none;
+  margin-right: 8px;
+}
+
+.imo-next-override {
+  background-color: #ffa800;
+}
+
+.imo-next-default {
+  background-color: #ffa800;
+}
+
+.imo-table-row-next {
+  background-color: #322100;
+}
+
+.imo-disabled-override {
+  background-color: #5f5f5f;
+}
+
+.imo-current-override {
+  background-color: #d52828;
+}
+
+.imo-table-row-current-override {
+  background-color: #2e0303;
+}
+
+@media (prefers-color-scheme: light) {
+  .imo-table-row-next {
+    background-color: #fffbf4;
+  }
+
+  .imo-table-row-current-override {
+    background-color: #fff3f3;
+  }
+}
+
+.imo-external-override {
+  border: 3px solid #ffa800;
+  background-color: none;
+}
+
+.imo-dev-lib-override {
+  border: 3px solid #ffa800;
+  background-color: none;
+}
+
+.imo-default-module {
+  border: 3px solid #d9d9d9;
+  background-color: none;
+}
+
+.imo-table-actions {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
 }
 
 .imo-module-dialog {
@@ -136,23 +422,6 @@
   border: 4px solid salmon;
 }
 
-.imo-table-header-actions {
-  display: flex;
-  align-items: center;
-}
-
-.imo-overrides-table {
-  border-collapse: collapse;
-  margin-top: 32px;
-}
-
-.imo-overrides-table tr td:first-child {
-  display: flex;
-  align-items: center;
-  padding-right: 32px;
-  position: relative;
-}
-
 .imo-needs-refresh {
   position: absolute;
   right: 8px;
@@ -163,62 +432,6 @@
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-}
-
-.imo-status {
-  height: 16px;
-  width: 16px;
-  border-radius: 8px;
-  border: 1px solid white;
-  margin-right: 8px;
-}
-
-.imo-disabled-override {
-  background-color: lightblue;
-}
-
-.imo-next-override {
-  background-color: darkred;
-}
-
-.imo-current-override {
-  background-color: salmon;
-}
-
-.imo-default-module {
-  background-color: lightgoldenrodyellow;
-}
-
-.imo-external-override {
-  background-color: orange;
-}
-
-.imo-next-default {
-  background-color: darkgoldenrod;
-}
-
-.imo-dev-lib-override {
-  background-color: lightpink;
-}
-
-.imo-overrides-table tbody tr:hover {
-  cursor: pointer;
-  background-color: #404040;
-}
-
-.imo-overrides-table td,
-.imo-overrides-table th {
-  line-height: 18px;
-  padding: 16px;
-  border: 1px solid white;
-}
-
-.imo-add-new {
-  margin-left: 16px;
-}
-
-.imo-add-new button {
-  color: black;
 }
 
 .imo-clear-input {
@@ -232,7 +445,7 @@
 }
 
 .imo-modal-container {
-  font-family: sans-serif;
+  font-family: Helvetica, sans-serif;
 }
 
 .imo-modal {
@@ -243,19 +456,4 @@
   top: 0;
   left: 0;
   z-index: 20000000;
-}
-
-.imo-list-search,
-.imo-list-container button,
-.imo-modal-container button {
-  font-size: 14px;
-  height: 27px;
-  line-height: 27px;
-}
-
-.imo-list-search {
-  line-height: 22px;
-  border: none;
-  padding: 5px;
-  color: black;
 }

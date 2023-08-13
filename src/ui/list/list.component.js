@@ -2,7 +2,59 @@ import { h, Component, render } from "preact";
 import { includes } from "../../util/includes.js";
 import ModuleDialog from "./module-dialog.component";
 import ExternalImportMap from "./external-importmap-dialog.component";
-import { devLibs } from "../dev-lib-overrides.component";
+import { getOverrideTypes } from "../../util/override-types.js";
+
+function SearchIcon() {
+  return (
+    <div className="imo-icon imo-list-search-icon">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="17"
+        viewBox="0 0 16 17"
+      >
+        <path
+          fill-rule="evenodd"
+          clip-rule="evenodd"
+          d="M10.9748 10.9683C10.985 10.9773 10.995 10.9867 11.0047 10.9965L13.8047 13.7965C14.0651 14.0568 14.0651 14.479 13.8047 14.7393C13.5444 14.9997 13.1223 14.9997 12.8619 14.7393L10.0619 11.9393C10.0522 11.9295 10.0428 11.9196 10.0337 11.9094C9.19238 12.5525 8.14081 12.9346 7 12.9346C4.23858 12.9346 2 10.696 2 7.93457C2 5.17315 4.23858 2.93457 7 2.93457C9.76142 2.93457 12 5.17315 12 7.93457C12 9.07538 11.6179 10.127 10.9748 10.9683ZM7 11.6012C9.02504 11.6012 10.6667 9.95961 10.6667 7.93457C10.6667 5.90953 9.02504 4.2679 7 4.2679C4.97496 4.2679 3.33333 5.90953 3.33333 7.93457C3.33333 9.95961 4.97496 11.6012 7 11.6012Z"
+        />
+      </svg>
+    </div>
+  );
+}
+function SearchBox({ value, onInput, inputRef }) {
+  return (
+    <div className="imo-list-search-container">
+      <SearchIcon />
+      <input
+        aria-label="Search modules"
+        placeholder="Search modules..."
+        value={value}
+        onInput={onInput}
+        ref={inputRef}
+      />
+    </div>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <div className="imo-icon">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="17"
+        viewBox="0 0 16 17"
+      >
+        <path
+          fill-rule="evenodd"
+          clip-rule="evenodd"
+          d="M8.82358 8.11099H12.1764C12.6313 8.11099 13 8.47972 13 8.93457C13 9.38942 12.6313 9.75815 12.1764 9.75815H8.82358V13.111C8.82358 13.5658 8.45485 13.9346 8 13.9346C7.54515 13.9346 7.17642 13.5658 7.17642 13.111V9.75815H3.82358C3.36873 9.75815 3 9.38942 3 8.93457C3 8.47972 3.36873 8.11099 3.82358 8.11099H7.17642V4.75815C7.17642 4.3033 7.54515 3.93457 8 3.93457C8.45485 3.93457 8.82358 4.3033 8.82358 4.75815V8.11099Z"
+        />
+      </svg>
+    </div>
+  );
+}
 
 export default class List extends Component {
   state = {
@@ -13,6 +65,7 @@ export default class List extends Component {
     dialogExternalMap: null,
     searchVal: "",
   };
+
   componentDidMount() {
     window.importMapOverrides.getDefaultMap().then((notOverriddenMap) => {
       this.setState({ notOverriddenMap });
@@ -26,9 +79,11 @@ export default class List extends Component {
     window.addEventListener("import-map-overrides:change", this.doUpdate);
     this.inputRef.focus();
   }
+
   componentWillUnmount() {
     window.removeEventListener("import-map-overrides:change", this.doUpdate);
   }
+
   componentDidUpdate(prevProps, prevState) {
     if (!prevState.dialogModule && this.state.dialogModule) {
       this.dialogContainer = document.createElement("div");
@@ -64,132 +119,37 @@ export default class List extends Component {
       delete this.dialogContainer;
     }
   }
+
   render() {
-    const overriddenModules = [],
-      nextOverriddenModules = [],
-      disabledOverrides = [],
-      defaultModules = [],
-      externalOverrideModules = [],
-      pendingRefreshDefaultModules = [],
-      devLibModules = [];
-
-    const overrideMap = window.importMapOverrides.getOverrideMap(true).imports;
-
-    const notOverriddenKeys = Object.keys(this.state.notOverriddenMap.imports);
-
-    const disabledModules = window.importMapOverrides.getDisabledOverrides();
-
-    notOverriddenKeys.filter(this.filterModuleNames).forEach((moduleName) => {
-      const mod = {
-        moduleName,
-        defaultUrl: this.state.notOverriddenMap.imports[moduleName],
-        overrideUrl: overrideMap[moduleName],
-        disabled: includes(disabledModules, moduleName),
-      };
-      if (mod.disabled) {
-        disabledOverrides.push(mod);
-      } else if (overrideMap[moduleName]) {
-        if (
-          this.state.currentPageMap.imports[moduleName] ===
-          overrideMap[moduleName]
-        ) {
-          if (
-            devLibs[moduleName] &&
-            devLibs[moduleName](
-              this.state.currentPageMap.imports[moduleName]
-            ) === overrideMap[moduleName]
-          ) {
-            devLibModules.push(mod);
-          } else {
-            overriddenModules.push(mod);
-          }
-        } else {
-          nextOverriddenModules.push(mod);
-        }
-      } else if (
-        this.state.notOverriddenMap.imports[moduleName] ===
-        this.state.currentPageMap.imports[moduleName]
-      ) {
-        defaultModules.push(mod);
-      } else if (
-        this.state.notOverriddenMap.imports[moduleName] ===
-        this.state.nextPageMap.imports[moduleName]
-      ) {
-        pendingRefreshDefaultModules.push(mod);
-      } else {
-        externalOverrideModules.push(mod);
-      }
-    });
-
-    Object.keys(overrideMap)
-      .filter(this.filterModuleNames)
-      .forEach((moduleName) => {
-        if (!includes(notOverriddenKeys, moduleName)) {
-          const mod = {
-            moduleName,
-            defaultUrl: null,
-            overrideUrl: overrideMap[moduleName],
-            disabled: includes(disabledModules, moduleName),
-          };
-
-          if (mod.disabled) {
-            disabledOverrides.push(mod);
-          } else if (
-            this.state.currentPageMap.imports[moduleName] ===
-            overrideMap[moduleName]
-          ) {
-            overriddenModules.push(mod);
-          } else {
-            nextOverriddenModules.push(mod);
-          }
-        }
-      });
-
-    overriddenModules.sort(sorter);
-    defaultModules.sort(sorter);
-    nextOverriddenModules.sort(sorter);
+    const {
+      overriddenModules,
+      nextOverriddenModules,
+      disabledOverrides,
+      defaultModules,
+      externalOverrideModules,
+      pendingRefreshDefaultModules,
+      devLibModules,
+    } = getOverrideTypes(
+      this.state.currentPageMap,
+      this.state.nextPageMap,
+      this.state.notOverriddenMap,
+      this.filterModuleNames
+    );
 
     const { brokenMaps, workingCurrentPageMaps, workingNextPageMaps } =
       getExternalMaps();
 
     return (
       <div className="imo-list-container">
-        <div className="imo-table-header-actions">
-          <input
-            className="imo-list-search"
-            aria-label="Search modules"
-            placeholder="Search modules"
+        <div className="imo-table-toolbar">
+          <SearchBox
             value={this.state.searchVal}
             onInput={(evt) => this.setState({ searchVal: evt.target.value })}
-            ref={(ref) => (this.inputRef = ref)}
+            inputRef={(ref) => (this.inputRef = ref)}
           />
-          <div className="imo-add-new">
-            <button
-              onClick={() =>
-                this.setState({
-                  dialogModule: { moduleName: "New module", isNew: true },
-                })
-              }
-            >
-              Add new module
-            </button>
-          </div>
-          <div className="imo-add-new">
-            <button
-              onClick={() => {
-                this.setState({
-                  dialogExternalMap: { url: "", isNew: true },
-                });
-              }}
-            >
-              Add import map
-            </button>
-          </div>
-          <div className="imo-add-new">
-            <button onClick={() => window.importMapOverrides.resetOverrides()}>
-              Reset all overrides
-            </button>
-          </div>
+          <button onClick={() => window.importMapOverrides.resetOverrides()}>
+            Reset all overrides
+          </button>
         </div>
         <table className="imo-overrides-table">
           <thead>
@@ -198,6 +158,7 @@ export default class List extends Component {
               <th>Module Name</th>
               <th>Domain</th>
               <th>Filename</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -207,15 +168,18 @@ export default class List extends Component {
                 tabIndex={0}
                 onClick={() => this.setState({ dialogModule: mod })}
                 key={mod.moduleName}
+                className="imo-table-row-next"
               >
-                <td onClick={this.reload} role="button" tabIndex={0}>
+                <td>
                   <div className="imo-status imo-next-override" />
-                  <div>Inline Override</div>
-                  <div className="imo-needs-refresh" />
+                  Inline Override
                 </td>
                 <td>{mod.moduleName}</td>
                 <td>{toDomain(mod)}</td>
                 <td>{toFileName(mod)}</td>
+                <td onClick={this.reload} role="button">
+                  Refresh to apply changes
+                </td>
               </tr>
             ))}
             {pendingRefreshDefaultModules.map((mod) => (
@@ -224,15 +188,18 @@ export default class List extends Component {
                 tabIndex={0}
                 onClick={() => this.setState({ dialogModule: mod })}
                 key={mod.moduleName}
+                className="imo-table-row-next"
               >
-                <td style={{ position: "relative" }}>
+                <td>
                   <div className="imo-status imo-next-default" />
-                  <div>Default</div>
-                  <div className="imo-needs-refresh" />
+                  Default
                 </td>
                 <td>{mod.moduleName}</td>
                 <td>{toDomain(mod)}</td>
                 <td>{toFileName(mod)}</td>
+                <td onClick={this.reload} role="button">
+                  Refresh to apply changes
+                </td>
               </tr>
             ))}
             {disabledOverrides.map((mod) => (
@@ -244,11 +211,12 @@ export default class List extends Component {
               >
                 <td>
                   <div className="imo-status imo-disabled-override" />
-                  <div>Override disabled</div>
+                  Override disabled
                 </td>
                 <td>{mod.moduleName}</td>
                 <td>{toDomain(mod)}</td>
                 <td>{toFileName(mod)}</td>
+                <td>Enable override</td>
               </tr>
             ))}
             {overriddenModules.map((mod) => (
@@ -257,14 +225,16 @@ export default class List extends Component {
                 tabIndex={0}
                 onClick={() => this.setState({ dialogModule: mod })}
                 key={mod.moduleName}
+                className="imo-table-row-current-override"
               >
                 <td>
                   <div className="imo-status imo-current-override" />
-                  <div>Inline Override</div>
+                  Inline Override
                 </td>
                 <td>{mod.moduleName}</td>
                 <td>{toDomain(mod)}</td>
                 <td>{toFileName(mod)}</td>
+                <td>Disable override</td>
               </tr>
             ))}
             {externalOverrideModules.map((mod) => (
@@ -273,14 +243,16 @@ export default class List extends Component {
                 tabIndex={0}
                 onClick={() => this.setState({ dialogModule: mod })}
                 key={mod.moduleName}
+                className="imo-table-row-external"
               >
                 <td>
                   <div className="imo-status imo-external-override" />
-                  <div>External Override</div>
+                  External Override
                 </td>
                 <td>{mod.moduleName}</td>
                 <td>{toDomain(mod)}</td>
                 <td>{toFileName(mod)}</td>
+                <td>-</td>
               </tr>
             ))}
             {devLibModules.map((mod) => (
@@ -293,11 +265,12 @@ export default class List extends Component {
               >
                 <td>
                   <div className="imo-status imo-dev-lib-override" />
-                  <div>Dev Lib Override</div>
+                  Dev Lib Override
                 </td>
                 <td>{mod.moduleName}</td>
                 <td>{toDomain(mod)}</td>
                 <td>{toFileName(mod)}</td>
+                <td>-</td>
               </tr>
             ))}
             {defaultModules.map((mod) => (
@@ -309,11 +282,12 @@ export default class List extends Component {
               >
                 <td>
                   <div className="imo-status imo-default-module" />
-                  <div>Default</div>
+                  Default
                 </td>
                 <td>{mod.moduleName}</td>
                 <td>{toDomain(mod)}</td>
                 <td>{toFileName(mod)}</td>
+                <td>Override</td>
               </tr>
             ))}
           </tbody>
@@ -332,7 +306,9 @@ export default class List extends Component {
                   role="button"
                   tabIndex={0}
                   onClick={() =>
-                    this.setState({ dialogExternalMap: { isNew: false, url } })
+                    this.setState({
+                      dialogExternalMap: { isNew: false, url },
+                    })
                   }
                   key={url}
                 >
@@ -348,7 +324,9 @@ export default class List extends Component {
                   role="button"
                   tabIndex={0}
                   onClick={() =>
-                    this.setState({ dialogExternalMap: { isNew: false, url } })
+                    this.setState({
+                      dialogExternalMap: { isNew: false, url },
+                    })
                   }
                   key={url}
                 >
@@ -364,7 +342,9 @@ export default class List extends Component {
                   role="button"
                   tabIndex={0}
                   onClick={() =>
-                    this.setState({ dialogExternalMap: { isNew: false, url } })
+                    this.setState({
+                      dialogExternalMap: { isNew: false, url },
+                    })
                   }
                   key={url}
                 >
@@ -378,6 +358,28 @@ export default class List extends Component {
             </tbody>
           </table>
         )}
+        <div className="imo-table-actions">
+          <button
+            onClick={() =>
+              this.setState({
+                dialogModule: { moduleName: "New module", isNew: true },
+              })
+            }
+          >
+            <PlusIcon />
+            Add new module
+          </button>
+          <button
+            onClick={() => {
+              this.setState({
+                dialogExternalMap: { url: "", isNew: true },
+              });
+            }}
+          >
+            <PlusIcon />
+            Add import map
+          </button>
+        </div>
       </div>
     );
   }
@@ -386,6 +388,10 @@ export default class List extends Component {
     evt.stopPropagation();
     window.location.reload();
   };
+
+  disableOverride(moduleName) {
+    window.importMapOverrides.disableOverride(moduleName);
+  }
 
   cancel = () => {
     this.setState({ dialogModule: null, dialogExternalMap: null });
@@ -427,10 +433,6 @@ export default class List extends Component {
       ? includes(moduleName, this.state.searchVal)
       : true;
   };
-}
-
-function sorter(first, second) {
-  return first.moduleName > second.moduleName;
 }
 
 const currentBase =

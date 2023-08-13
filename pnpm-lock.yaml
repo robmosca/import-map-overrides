@@ -1,5 +1,9 @@
 lockfileVersion: "6.0"
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
   cookie:
     specifier: ^0.4.1
@@ -67,8 +71,8 @@ devDependencies:
     specifier: ^8.3.5
     version: 8.3.5
   preact:
-    specifier: ^10.5.14
-    version: 10.5.14
+    specifier: ^10.16.0
+    version: 10.16.0
   prettier:
     specifier: ^2.3.2
     version: 2.3.2
@@ -7899,10 +7903,10 @@ packages:
       source-map-js: 0.6.2
     dev: true
 
-  /preact@10.5.14:
+  /preact@10.16.0:
     resolution:
       {
-        integrity: sha512-KojoltCrshZ099ksUZ2OQKfbH66uquFoxHSbnwKbTJHeQNvx42EmC7wQVWNuDt6vC5s3nudRHFtKbpY4ijKlaQ==,
+        integrity: sha512-XTSj3dJ4roKIC93pald6rWuB2qQJO9gO2iLLyTe87MrjQN+HklueLsmskbywEWqCHlclgz3/M4YLL2iBr9UmMA==,
       }
     dev: true
 
